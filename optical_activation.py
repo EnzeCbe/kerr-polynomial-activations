@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from torch.autograd import gradcheck
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -16,8 +15,8 @@ def W_to_mW(x):
 class OpticalModel(nn.Module):
     def __init__(self, sign=-1.0):
         super().__init__()
-        self.log_mag2 = nn.Parameter(torch.randn(1) * 0.1)  # |alpha2| katsayısı, [W^-1]
-        self.log_mag3 = nn.Parameter(torch.randn(1) * 0.1)  # |alpha3| katsayısı, [W^-2]
+        self.log_mag2 = nn.Parameter(torch.randn(1) * 0.1)  # |alpha2|, [W^-1]
+        self.log_mag3 = nn.Parameter(torch.randn(1) * 0.1)  # |alpha3|, [W^-2]
         self.sign = sign
 
     def forward(self, OpticalPowerIn):  # OpticalPowerIn: [W]
@@ -25,6 +24,7 @@ class OpticalModel(nn.Module):
         alpha3 = self.sign * torch.exp(self.log_mag3)  # [W^-2]
         OpticalPowerOut = OpticalPowerIn * (1 + alpha2 * OpticalPowerIn + alpha3 * OpticalPowerIn**2)  # [W]
         return OpticalPowerOut
+
 
 model = OpticalModel(sign=-1.0).double()
 
@@ -42,7 +42,8 @@ n_epochs = 100
 
 P_in_mW = torch.linspace(0, 10, 200).unsqueeze(1)  # [mW]
 P_in_W = mW_to_W(P_in_mW)  # [W]
-P_target_W = mW_to_W(torch.sqrt(P_in_mW))
+P_target_W = mW_to_W(torch.sqrt(P_in_mW))  # target: sqrt(P_in), [W]
+
 loss_history = []
 
 for epoch in range(n_epochs):
